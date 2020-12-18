@@ -29,7 +29,7 @@ struct registers_data {
 };
 
 registers registers_create() {
-    registers r = malloc(sizeof(registers_data));
+    registers r = malloc(sizeof(struct registers_data));
     if(r == NULL){
       exit(0);
     }
@@ -41,15 +41,15 @@ void registers_destroy(registers r) {
 }
 
 uint8_t get_mode(registers r) {
-    return r[17] & Ob11111;
+    return r -> regs[16] & 0b11111;
 } 
 
 int current_mode_has_spsr(registers r) {
-    return arm_get_mode_name(get_mode(r)) != "USR";
+    return get_mode(r) != USR && get_mode(r) != SYS;
 }
 
 int in_a_privileged_mode(registers r) {
-    return arm_get_mode_name(get_mode(r)) != "USR" && arm_get_mode_name(get_mode(r)) != "SYS";
+    return get_mode(r) != USR ;
 }
 
 uint32_t read_register(registers r, uint8_t reg) {
