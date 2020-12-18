@@ -70,12 +70,12 @@ int memory_read_half(memory mem, uint32_t address, uint16_t *value) {
     }else{
         if(mem -> endianness){        //Big endianness
             *value = mem -> mems[address];
-            *value = *value >> 8;
-            *value = mem -> mems[address+1];
+            *value = *value << 8;
+            *value |= mem -> mems[address+1];
         }else{                       //Little endianness
             *value = mem -> mems[address+1];
-            *value = *value >> 8;
-            *value = mem -> mems[address];
+            *value = *value << 8;
+            *value |= mem -> mems[address];
         }
     }
     return 0;
@@ -100,7 +100,7 @@ int memory_read_word(memory mem, uint32_t address, uint32_t *value) {
         }
     }
     return 0;
-}
+}   
 
 int memory_write_byte(memory mem, uint32_t address, uint8_t value) {
     if(address > mem -> taille){
