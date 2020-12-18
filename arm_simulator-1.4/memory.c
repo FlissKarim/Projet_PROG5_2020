@@ -56,15 +56,50 @@ void memory_destroy(memory mem) {
 }
 
 int memory_read_byte(memory mem, uint32_t address, uint8_t *value) {
-    return -1;
+    if(address > mem->taille){
+        return -1;
+    }else{
+        *value = mem -> mems[address];
+    }
+    return 0;
 }
 
 int memory_read_half(memory mem, uint32_t address, uint16_t *value) {
-    return -1;
+    if(address > mem->taille){
+        return -1;
+    }else{
+        if(mem -> endianness){        //Big endianness
+            *value = mem -> mems[address];
+            *value = *value >> 8;
+            *value = mem -> mems[address+1];
+        }else{                       //Little endianness
+            *value = mem -> mems[address+1];
+            *value = *value >> 8;
+            *value = mem -> mems[address];
+        }
+    }
+    return 0;
 }
 
 int memory_read_word(memory mem, uint32_t address, uint32_t *value) {
-    return -1;
+    if(address > mem->taille){
+        return -1;
+    }
+    int i;
+    /* Lecture en Big endian */
+    if(mem->endianness==1){ 
+        for(i=3;i>=0;i--){
+            *value = *value << 8;
+            *value = (*value | (mem->mems[address+i] & 0xff )) ;
+        }
+    /* Lecture en Little endian */
+    }else{
+        for(i=0;i<=3;i++){
+            *value = *value << 8;
+            *value = (*value | (mem->mems[address+i] & 0xff )) ;
+        }
+    }
+    return 0;
 }
 
 int memory_write_byte(memory mem, uint32_t address, uint8_t value) {
@@ -95,9 +130,19 @@ int memory_write_half(memory mem, uint32_t address, uint16_t value) {
 }
 
 int memory_write_word(memory mem, uint32_t address, uint32_t value) {
-    if(address > mem -> taille){
-      return -1;
+    if(address > mem->taille){
+        return -1;
+    }
+    int i;
+    if(mem->endianness==1){
+        
+        for(i=3;i>=0;i--){
+            mem->mems[address+i] = (uint8_t) (value >> 8*(3-i)) & 0xff;
+        }
     }else{
+        for(i=0;i<=3;i++){
+            mem->mems[address+i] = (uint8_t) (value >> 8*i) & 0xff;
+        }
     }
     return 0;
 }
