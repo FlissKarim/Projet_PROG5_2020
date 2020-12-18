@@ -25,30 +25,35 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdlib.h>
 
 struct registers_data {
+  uint32_t regs[18];
 };
 
 registers registers_create() {
-    registers r = NULL;
+    registers r = malloc(sizeof(registers_data));
+    if(r == NULL){
+      exit(0);
+    }
     return r;
 }
 
 void registers_destroy(registers r) {
+    free(r);
 }
 
 uint8_t get_mode(registers r) {
-    return 0;
+    return r[17] & Ob11111;
 } 
 
 int current_mode_has_spsr(registers r) {
-    return 0;
+    return arm_get_mode_name(get_mode(r)) != "USR";
 }
 
 int in_a_privileged_mode(registers r) {
-    return 0;
+    return arm_get_mode_name(get_mode(r)) != "USR" && arm_get_mode_name(get_mode(r)) != "SYS";
 }
 
 uint32_t read_register(registers r, uint8_t reg) {
-    uint32_t value=0;
+    uint32_t value= r -> regs[reg];
     return value;
 }
 
