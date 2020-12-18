@@ -25,18 +25,34 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 
 struct memory_data {
+    int endianness;//1 big, 0 little 
+    size_t taille;
+    uint8_t *mems;
 };
 
 memory memory_create(size_t size, int is_big_endian) {
-    memory mem=NULL;
+    memory mem = malloc(sizeof(struct memory_data));
+    if(mem == NULL){
+        exit(0);
+    }else{
+        mem->endianness = is_big_endian;
+        mem->taille = size;
+        mem -> mems = malloc(sizeof(uint8_t)*size);
+        if(mem -> mems == NULL){
+            free(mem);
+            exit(0);
+        }
+    }
     return mem;
 }
 
 size_t memory_get_size(memory mem) {
-    return 0;
+    return mem->taille;
 }
 
 void memory_destroy(memory mem) {
+    free(mem -> mems);
+    free(mem);
 }
 
 int memory_read_byte(memory mem, uint32_t address, uint8_t *value) {
@@ -52,13 +68,36 @@ int memory_read_word(memory mem, uint32_t address, uint32_t *value) {
 }
 
 int memory_write_byte(memory mem, uint32_t address, uint8_t value) {
-    return -1;
+    if(address > mem -> taille){
+      return -1;
+    }else{
+      mem -> mems[address] = value;
+    }
+    return 0;
 }
 
 int memory_write_half(memory mem, uint32_t address, uint16_t value) {
-    return -1;
+    if(address > mem -> taille){
+      return -1;
+    }else{
+      if(mem -> endianness == 0){    // little endiannes
+          uint8_t tmp = (uint8_t) value;
+          mem -> mems[address] = tmp;
+          mem -> mems[address + 1] = value >> 8;
+      
+      }else {  //big endiannes
+          uint8_t tmp = (uint8_t) value;
+          mem -> mems[address + 1] = tmp;
+          mem -> mems[address] = value >> 8;
+      }
+      return 0;
+    }
 }
 
 int memory_write_word(memory mem, uint32_t address, uint32_t value) {
-    return -1;
+    if(address > mem -> taille){
+      return -1;
+    }else{
+    }
+    return 0;
 }
