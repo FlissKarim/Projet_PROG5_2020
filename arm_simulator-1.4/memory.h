@@ -25,6 +25,8 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdint.h>
 #include <sys/types.h>
 
+#define MEMSIZE (1 << 30)
+
 typedef struct memory_data *memory;
 
 memory memory_create(size_t size, int is_big_endian);

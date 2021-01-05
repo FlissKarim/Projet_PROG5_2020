@@ -24,12 +24,64 @@ Contact: Guillaume.Huard@imag.fr
 #define __REGISTERS_H__
 #include <stdint.h>
 
+#define NBREG 37
+
+typedef enum {
+	// base
+	R0,
+	R1,
+	R2,
+	R3,
+	R4,
+	R5,
+	R6,
+	R7,
+	R8,
+	R9,
+	R10,
+	R11,
+	R12,
+	R13, // SP
+	R14, // LR
+	PC,
+	RCPSR, // R rajouter a CPSR pour enlever l'embeguité entre CPSR de trace.h et registre.h
+	
+	// supervisor variants
+	R13_svc,
+	R14_svc,
+	SPSR_svc,
+	// abort variants
+	R13_abt,
+	R14_abt,
+	SPSR_abt,
+	// undefined variants
+	R13_und,
+	R14_und,
+	SPSR_und,
+	// interrupt variants
+	R13_irq,
+	R14_irq,
+	SPSR_irq,
+
+	// fast interrupt variants
+	R8_fiq,
+	R9_fiq,
+	R10_fiq,
+	R11_fiq,
+	R12_fiq,
+	R13_fiq,
+	R14_fiq,
+	SPSR_fiq
+} reg_name;
+
 typedef struct registers_data *registers;
 
 registers registers_create();
 void registers_destroy(registers r);
 
-uint8_t get_mode(registers r);
+uint16_t get_mode(registers r);
+void set_mode(registers r, uint16_t mode);
+
 int current_mode_has_spsr(registers r);
 int in_a_privileged_mode(registers r);
 

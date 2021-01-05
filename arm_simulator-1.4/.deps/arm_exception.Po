@@ -23,7 +23,7 @@ arm_exception.o: arm_exception.c /usr/include/stdc-predef.h \
  /usr/lib/gcc/x86_64-linux-gnu/4.9/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/sys_errlist.h memory.h \
- trace_location.h trace.h arm_constants.h util.h
+ trace_location.h trace.h arm_constants.h util.h /usr/include/assert.h
 
 /usr/include/stdc-predef.h:
 
@@ -100,3 +100,5 @@ trace.h:
 arm_constants.h:
 
 util.h:
+
+/usr/include/assert.h:

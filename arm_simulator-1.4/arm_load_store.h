@@ -26,6 +26,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_core.h"
 
 int arm_load_store(arm_core p, uint32_t ins);
+int arm_load_store_miscellaneous(arm_core p, uint32_t ins);
 int arm_load_store_multiple(arm_core p, uint32_t ins);
 int arm_coprocessor_load_store(arm_core p, uint32_t ins);
 

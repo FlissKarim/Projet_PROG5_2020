@@ -48,6 +48,13 @@ Contact: Guillaume.Huard@imag.fr
 #define C 29
 #define V 28
 
+#define T 5
+#define F 6
+#define I 7
+#define A 8
+#define E 9
+
+
 /* shift operations */
 #define LSL 0
 #define LSR 1

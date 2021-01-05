@@ -25,124 +25,103 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 
 struct memory_data {
-    int endianness;//1 big, 0 little 
-    size_t taille;
-    uint8_t *mems;
+	uint8_t tab[MEMSIZE];
+	size_t size;
+	int is_big_endian;
 };
 
 memory memory_create(size_t size, int is_big_endian) {
     memory mem = malloc(sizeof(struct memory_data));
-    if(mem == NULL){
-        exit(0);
-    }else{
-        mem->endianness = is_big_endian;
-        mem->taille = size;
-        mem -> mems = malloc(sizeof(uint8_t)*size);
-        if(mem -> mems == NULL){
-            free(mem);
-            exit(0);
-        }
-    }
+    mem->is_big_endian = is_big_endian;
+    mem->size = size; 
     return mem;
 }
 
 size_t memory_get_size(memory mem) {
-    return mem->taille;
+	if(mem) return mem->size;
+    return 0;
 }
 
 void memory_destroy(memory mem) {
-    free(mem -> mems);
-    free(mem);
+	if(mem) free(mem);
 }
 
 int memory_read_byte(memory mem, uint32_t address, uint8_t *value) {
-    if(address > mem->taille){
-        return -1;
-    }else{
-        *value = mem -> mems[address];
-    }
-    return 0;
+	if(mem) {
+		*value = mem->tab[address];
+		return 0;
+	}
+    return -1;
 }
 
 int memory_read_half(memory mem, uint32_t address, uint16_t *value) {
-    if(address > mem->taille){
-        return -1;
-    }else{
-        if(mem -> endianness){        //Big endianness
-            *value = mem -> mems[address];
-            *value = *value << 8;
-            *value |= mem -> mems[address+1];
-        }else{                       //Little endianness
-            *value = mem -> mems[address+1];
-            *value = *value << 8;
-            *value |= mem -> mems[address];
-        }
-    }
-    return 0;
+	if(mem) {
+		uint16_t * ptr = (uint16_t *) (mem->tab + address);
+		// si memoire et machine ont le meme boutisme
+		if (mem->is_big_endian == is_big_endian()) {
+			*value = ptr[0];
+			return 0;
+		}
+		else {
+			*value = reverse_2(ptr[0]);
+			return 0;
+		}
+	}
+    return -1;
 }
 
 int memory_read_word(memory mem, uint32_t address, uint32_t *value) {
-    if(address > mem->taille){
-        return -1;
-    }
-    int i;
-    /* Lecture en Big endian */
-    if(mem->endianness==1){ 
-        for(i=3;i>=0;i--){
-            *value = *value << 8;
-            *value = (*value | (mem->mems[address+i] & 0xff )) ;
-        }
-    /* Lecture en Little endian */
-    }else{
-        for(i=0;i<=3;i++){
-            *value = *value << 8;
-            *value = (*value | (mem->mems[address+i] & 0xff )) ;
-        }
-    }
-    return 0;
-}   
+	if(mem) {
+		uint32_t * ptr = (uint32_t *) (mem->tab + address);
+		// si memoire et machine ont le meme boutisme
+		if (mem->is_big_endian == is_big_endian()) {
+			*value = ptr[0];
+			return 0;
+		}
+		else {
+			*value = reverse_4(ptr[0]);
+			return 0;
+		}
+	}
+    return -1;
+}
 
 int memory_write_byte(memory mem, uint32_t address, uint8_t value) {
-    if(address > mem -> taille){
-      return -1;
-    }else{
-      mem -> mems[address] = value;
-    }
-    return 0;
+	if(mem) {
+		mem->tab[address] = value;
+		return 0;
+	}
+    return -1;
 }
 
 int memory_write_half(memory mem, uint32_t address, uint16_t value) {
-    if(address > mem -> taille){
-      return -1;
-    }else{
-      if(mem -> endianness == 0){    // little endiannes
-          uint8_t tmp = (uint8_t) value;
-          mem -> mems[address] = tmp;
-          mem -> mems[address + 1] = value >> 8;
-      
-      }else {  //big endiannes
-          uint8_t tmp = (uint8_t) value;
-          mem -> mems[address + 1] = tmp;
-          mem -> mems[address] = value >> 8;
-      }
-      return 0;
-    }
+	if(mem) {
+		uint16_t * ptr = (uint16_t *) (mem->tab + address);
+		// si memoire et machine ont le meme boutisme
+		if (mem->is_big_endian == is_big_endian()) {
+			 ptr[0] = value;
+			return 0;
+		}
+		else {
+			ptr[0] = reverse_2(value);
+			return 0;
+		}
+	}
+    return -1;
 }
 
 int memory_write_word(memory mem, uint32_t address, uint32_t value) {
-    if(address > mem->taille){
-        return -1;
-    }
-    int i;
-    if(mem->endianness==1){
-        
-        for(i=3;i>=0;i--){
-            mem->mems[address+i] = (uint8_t) (value >> 8*(3-i)) & 0xff;
-        }
-    }else{
-        for(i=0;i<=3;i++){
-            mem->mems[address+i] = (uint8_t) (value >> 8*i) & 0xff;
-        }
-    }
-    return 0;
+	if(mem) {
+		uint32_t * ptr = (uint32_t *) (mem->tab + address);
+		// si memoire et machine ont le meme boutisme
+		if (mem->is_big_endian == is_big_endian()) {
+			ptr[0] = value;
+			return 0;
+		}
+		else {
+			ptr[0] = reverse_4(value);
+			return 0;
+		}
+	}
+    return -1;
 }

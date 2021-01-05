@@ -37,6 +37,7 @@ void arm_print_state(arm_core p, FILE *out);
 int arm_current_mode_has_spsr(arm_core p);
 int arm_in_a_privileged_mode(arm_core p);
 uint32_t arm_get_cycle_count(arm_core p);
+void arm_set_mode(arm_core p, uint16_t mode);
 
 uint32_t arm_read_register(arm_core p, uint8_t reg);
 uint32_t arm_read_usr_register(arm_core p, uint8_t reg);

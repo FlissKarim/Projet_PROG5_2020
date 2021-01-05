@@ -41,7 +41,7 @@ arm_core arm_create(memory mem) {
     p = malloc(sizeof(struct arm_core_data));
     if (p) {
         p->mem = mem;
-	p->reg = registers_create();
+		p->reg = registers_create();
         arm_exception(p, RESET);
         p->cycle_count = 0;
     }
@@ -51,6 +51,10 @@ arm_core arm_create(memory mem) {
 void arm_destroy(arm_core p) {
     registers_destroy(p->reg);
     free(p);
+}
+
+void arm_set_mode(arm_core p, uint16_t mode) {
+    set_mode(p->reg, mode);
 }
 
 int arm_current_mode_has_spsr(arm_core p) {
@@ -133,6 +137,7 @@ int arm_fetch(arm_core p, uint32_t *value) {
     p->cycle_count++;
     address = arm_read_register(p, 15) - 4;
     result = memory_read_word(p->mem, address, value);
+
     trace_memory(p->cycle_count, READ, 4, OPCODE_FETCH, address, *value);
     arm_write_register(p, 15, address + 4);
     return result;

@@ -58,8 +58,7 @@ int main(int argc, char *argv[]) {
         }
     }
     sock = Socket(PF_INET, SOCK_STREAM, 0);
-    Setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &option_value,
-               sizeof(option_value));
+    Setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &option_value, sizeof(option_value));
     bzero(&addr, sizeof(addr));
     addr.sin_port = htons(atoi(argv[2]));
     addr.sin_family = AF_INET;

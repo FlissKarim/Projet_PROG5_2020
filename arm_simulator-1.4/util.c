@@ -22,6 +22,47 @@ Contact: Guillaume.Huard@imag.fr
 */
 #include "util.h"
 
+int condition(uint32_t cpsr, uint8_t cond) {
+	unsigned c, n, z, v;
+	z = get_bit(cpsr, Z);
+	n = get_bit(cpsr, N);
+	c = get_bit(cpsr, C);
+	v = get_bit(cpsr, V);
+	switch(cond) {
+		// EQ
+		case 0: return z; break;
+		// NE
+		case 1: return !z; break;
+		// CS/HS
+		case 2: return c; break;
+		// CC/LO
+		case 3: return !c; break;
+		// MI
+		case 4: return n; break;
+		// PL
+		case 5: return !n; break;
+		// VS
+		case 6: return v; break;
+		// VC
+		case 7: return !v; break;
+		// HI
+		case 8: return c & !z; break;
+		// LS
+		case 9: return !c || z; break;
+		// GE
+		case 10: return n == v; break;
+		// LT
+		case 11: return n != v; break;
+		// GT
+		case 12: return (!z) && (n == v); break;
+		// LE
+		case 13: return (z || (n != v)); break;
+		// AL
+		case 14: return 1; break;
+	}
+	return 1;
+}
+
 /* We implement asr because shifting a signed is non portable in ANSI C */
 uint32_t asr(uint32_t value, uint8_t shift) {
     return (value >> shift) | (get_bit(value, 31) ? ~0<<(32-shift) : 0);

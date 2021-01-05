@@ -20,7 +20,7 @@ memory.o: memory.c /usr/include/stdc-predef.h /usr/include/stdlib.h \
  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h memory.h \
  /usr/lib/gcc/x86_64-linux-gnu/4.9/include/stdint.h /usr/include/stdint.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h util.h
+ /usr/include/x86_64-linux-gnu/bits/wchar.h util.h arm_constants.h
 
 /usr/include/stdc-predef.h:
 
@@ -83,3 +83,5 @@ memory.h:
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
 
 util.h:
+
+arm_constants.h:

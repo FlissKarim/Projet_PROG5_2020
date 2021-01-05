@@ -31,6 +31,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "trace.h"
 #include "debug.h"
 
+
 struct shared_data {
     memory mem;
     arm_core arm;
@@ -50,8 +51,7 @@ static struct server_data create_server(in_port_t port) {
     int option_value=1;
 
     result.socket = Socket(PF_INET, SOCK_STREAM, 0);
-    Setsockopt(result.socket, SOL_SOCKET, SO_REUSEADDR, &option_value,
-               sizeof(option_value));
+    Setsockopt(result.socket, SOL_SOCKET, SO_REUSEADDR, &option_value, sizeof(option_value));
     bzero(&addr, sizeof(addr));
     addr.sin_port = htons(port);
     addr.sin_family = AF_INET;
@@ -76,8 +76,7 @@ static void *gdb_listener(void *arg) {
     fprintf(stderr, "Listening to gdb connection on port %d\n", server.port);
     peer_length = sizeof(peer);
     connection = Accept(server.socket, (struct sockaddr *) &peer, &peer_length);
-    gdb_scanner(shared->arm, shared->mem, connection, connection,
-                &shared->lock);
+    gdb_scanner(shared->arm, shared->mem, connection, connection, &shared->lock);
     shutdown(connection, SHUT_RDWR);
     close(server.socket);
 
@@ -96,8 +95,7 @@ static void *irq_listener(void *arg) {
     fprintf(stderr, "Listening to irq connections on port %d\n", server.port);
     while (1) {
         peer_length = sizeof(peer);
-        connection = Accept(server.socket, (struct sockaddr *) &peer,
-                            &peer_length);
+        connection = Accept(server.socket, (struct sockaddr *) &peer, &peer_length);
         while (Read(connection, &irq, 1) > 0) {
             pthread_mutex_lock(&shared->lock);
             arm_exception(shared->arm, irq);
@@ -207,6 +205,9 @@ int main(int argc, char *argv[]) {
 #endif
     shared.arm = arm_create(shared.mem);
 
+	// ADDED! init cpsr mode to USR, because the default is SVC 
+	arm_write_cpsr(shared.arm, 0x10);
+	
     pthread_mutex_init(&shared.lock, NULL);
     pthread_create(&gdb_thread, NULL, gdb_listener, &shared);
     pthread_create(&irq_thread, NULL, irq_listener, &shared);

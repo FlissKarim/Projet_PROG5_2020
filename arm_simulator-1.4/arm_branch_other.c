@@ -27,7 +27,21 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdlib.h>
 
 
+// B | BL
 int arm_branch(arm_core p, uint32_t ins) {
+	uint8_t cond = get_bits(ins, 31, 28);
+	uint8_t L = get_bit(ins, 24);	
+	uint32_t signed_immed_24 = get_bits(ins, 23, 0);
+	uint32_t cpsr = arm_read_cpsr(p);
+	if (condition(cpsr, cond)) {
+		if (L == 1)
+			arm_write_register(p, 14, arm_read_register(p, 15) - 4);
+		
+		if (get_bit(ins, 23) == 1)
+			signed_immed_24 = (~(0) << (30 - 24)) | signed_immed_24;
+		signed_immed_24 = signed_immed_24 << 2;
+		arm_write_register(p, 15, arm_read_register(p, 15) + signed_immed_24);
+	}
     return UNDEFINED_INSTRUCTION;
 }
 

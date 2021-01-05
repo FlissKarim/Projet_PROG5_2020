@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#ajout
+.nfs00000000ec8e6ffc0000001c
+Examples/example1
+Examples/example2
+Examples/example3
+Examples/example4
