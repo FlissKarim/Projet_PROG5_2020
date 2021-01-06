@@ -27,6 +27,7 @@ Contact: Guillaume.Huard@imag.fr
 
 void arm_exception(arm_core p, unsigned char exception);
 void save_state_and_change_mode(arm_core p, unsigned char exception, uint16_t mode);
+void data_abort(arm_core p);
 void branch_handler(arm_core p);
 
 #endif
