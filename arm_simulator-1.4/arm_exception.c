@@ -50,8 +50,10 @@ void arm_exception(arm_core p, unsigned char exception) {
 		break;
 
 		case PREFETCH_ABORT:
-
+      save_state_and_change_mode(p, exception, ABT);
+			branch_handler(p);
 		break;
+   
 		case DATA_ABORT:
 			data_abort(p);
 			branch_handler(p);
