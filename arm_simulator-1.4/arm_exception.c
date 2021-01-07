@@ -50,7 +50,7 @@ void arm_exception(arm_core p, unsigned char exception) {
 		break;
 
 		case PREFETCH_ABORT:
-      save_state_and_change_mode(p, exception, ABT);
+      prefetch_abort(p);
 			branch_handler(p);
 		break;
    
@@ -115,6 +115,22 @@ void save_state_and_change_mode(arm_core p, unsigned char exception, uint16_t mo
 	}
 	if (HIGH_VECTOR_ADDRESS) exception_vector_address |= 0xFFFF0000;
 
+	arm_write_register(p, 15, exception_vector_address);
+}
+
+void prefetch_abort(arm_core p) {
+	uint32_t pc = arm_read_register(p, 15);
+	uint32_t cpsr = arm_read_cpsr(p);
+	uint32_t exception_vector_address = 0xC;
+	arm_set_mode(p, ABT); /* Enter Abort mode */
+	arm_write_register(p, 14, pc);
+	arm_write_spsr(p, cpsr);
+	cpsr = clr_bit(cpsr, T); /* Execute in ARM state */
+	cpsr = set_bit(cpsr, I); /* Disable normal interrupts */
+	// cpsr = set_bit(cpsr, A); /* Disable Imprecise Data Aborts (v6 only) */
+	/* Endianness on exception entry : STEP PASSED FOR ARMv5 */
+	
+	if (HIGH_VECTOR_ADDRESS) exception_vector_address |= 0xFFFF0000;
 	arm_write_register(p, 15, exception_vector_address);
 }
 
