@@ -33,38 +33,38 @@ void arm_exception(arm_core p, unsigned char exception) {
     switch(exception) {
     	case RESET:
     		arm_write_cpsr(p, 0x1d3 | Exception_bit_9);
-			arm_write_usr_register(p, 15, 0);
-		break;
+		arm_write_usr_register(p, 15, 0);
+	break;
 
-		case UNDEFINED_INSTRUCTION:
-			save_state_and_change_mode(p, exception, UND);
-			branch_handler(p);
-		break;
+	case UNDEFINED_INSTRUCTION:
+		save_state_and_change_mode(p, exception, UND);
+		branch_handler(p);
+	break;
 
-		case SOFTWARE_INTERRUPT:
-			save_state_and_change_mode(p, exception, SVC);
-			branch_handler(p);
-		break;
+	case SOFTWARE_INTERRUPT:
+		save_state_and_change_mode(p, exception, SVC);
+		branch_handler(p);
+	break;
 
-		case PREFETCH_ABORT:
-     		prefetch_abort(p);
-			branch_handler(p);
-		break;
+	case PREFETCH_ABORT:
+		gest_abort(p,0xC);
+		branch_handler(p);
+	break;
    
-		case DATA_ABORT:
-			data_abort(p);
-			branch_handler(p);
-		break;
+	case DATA_ABORT:
+		gest_abort(p,0x10);
+		branch_handler(p);
+	break;
 
-		case INTERRUPT:
-			save_state_and_change_mode(p, exception, IRQ);
-			branch_handler(p);
-		break;
+	case INTERRUPT:
+		save_state_and_change_mode(p, exception, IRQ);
+		branch_handler(p);
+	break;
 
-		case FAST_INTERRUPT:
-			save_state_and_change_mode(p, exception, FIQ);
-			branch_handler(p);
-		break;
+	case FAST_INTERRUPT:
+		save_state_and_change_mode(p, exception, FIQ);
+		branch_handler(p);
+	break;
 	}
 }
 
@@ -115,10 +115,10 @@ void save_state_and_change_mode(arm_core p, unsigned char exception, uint16_t mo
 	arm_write_register(p, 15, exception_vector_address);
 }
 
-void prefetch_abort(arm_core p) {
+void gest_abort(arm_core p,uint32_t adr_vect){
 	uint32_t pc = arm_read_register(p, 15);
 	uint32_t cpsr = arm_read_cpsr(p);
-	uint32_t exception_vector_address = 0xC;
+	uint32_t exception_vector_address = adr_vect;
 	arm_set_mode(p, ABT); /* Enter Abort mode */
 	arm_write_register(p, 14, pc);
 	arm_write_spsr(p, cpsr);
@@ -128,21 +128,5 @@ void prefetch_abort(arm_core p) {
 	/* Endianness on exception entry : STEP PASSED FOR ARMv5 */
 	
 	if (HIGH_VECTOR_ADDRESS) exception_vector_address |= 0xFFFF0000;
-	arm_write_register(p, 15, exception_vector_address);
-}
-
-void data_abort(arm_core p) {
-	uint32_t pc = arm_read_register(p, 15);
-	uint32_t cpsr = arm_read_cpsr(p);
-	uint32_t exception_vector_address = 0x10;
-	arm_set_mode(p, ABT); /* Enter Abort mode */
-	arm_write_register(p, 14, pc);
-	arm_write_spsr(p, cpsr);
-	cpsr = clr_bit(cpsr, T); /* Execute in ARM state */
-	cpsr = set_bit(cpsr, I); /* Disable normal interrupts */
-	// cpsr = set_bit(cpsr, A); /* Disable Imprecise Data Aborts (v6 only) */
-	/* Endianness on exception entry : STEP PASSED FOR ARMv5 */
-	
-	if (HIGH_VECTOR_ADDRESS) exception_vector_address |= 0xFFFF0000;
-	arm_write_register(p, 15, exception_vector_address);
+		arm_write_register(p, 15, exception_vector_address);
 }
