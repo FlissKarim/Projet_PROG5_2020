@@ -126,7 +126,7 @@ int arm_data_processing_immediate_msr(arm_core p, uint32_t ins) {
 
 // processing
 // borrowFrom is the negation of carryFrom
-void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shifter_carry_out) {
+void processing(arm_core p, uint32_t ins, int32_t shifter_operand, uint8_t shifter_carry_out) {
 	// shifter_operand now is calculated
 	uint32_t cond = get_bits(ins, 31, 28);
 				
@@ -167,7 +167,7 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
       			comp = 1;
 		  	z = rd_value == 0;
 		  	n = get_bit(rd_value, 31);
-      			c = !borrowFrom( rd_value );
+      			c = !borrowFrom( rd_value, shifter_operand, rd_value);
 		  	v = overflowFrom(rn, shifter_operand, rd_value);	
 		break;
 		case RSB:
@@ -175,7 +175,7 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
       			comp = 1;
 			z =rd_value == 0;
 			n = get_bit(rd_value, 31);
-      			c = !borrowFrom( rd_value );
+      			c = !borrowFrom( rd_value, shifter_operand, rd_value);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case ADD:
@@ -183,7 +183,7 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
 			comp = 1;
 			z = rd_value == 0;
 			n = get_bit(rd_value, 31);
-			c = carryFrom( rd_value );
+			c = carryFrom(rd_value ,shifter_operand, rn);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case ADC:
@@ -191,7 +191,7 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
 			comp = 1;
 			z = rd_value == 0;
 			n = get_bit(rd_value, 31);
-			c = carryFrom( rd_value );
+			c = carryFrom(rd_value ,shifter_operand, rn);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case SBC:
@@ -199,7 +199,7 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
 			comp = 1;
 			z = rd_value == 0;
 			n = get_bit(rd_value, 31);
-			c = !borrowFrom( rd_value );
+			c = !borrowFrom( rd_value, shifter_operand, rd_value);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case RSC:
@@ -207,7 +207,7 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
 			comp = 1;
 			z = rd_value == 0;
 			n = get_bit(rd_value, 31);
-			c = !borrowFrom( rd_value );
+			c = !borrowFrom( rd_value, shifter_operand, rd_value);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case ORR:
@@ -253,17 +253,17 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
 		case TEQ:
   			alu_out = rn ^ shifter_operand;
   			comp = 0;
-      			z = alu_out == 0;
+  			z = alu_out == 0;
   			n = get_bit(alu_out, 31);
 		  	c = shifter_carry_out;
-	    		v = 0;
+        v = 0;
 		break;
 		case CMP:
   			alu_out = rn - shifter_operand;
 		      	comp = 0;
   			z = alu_out == 0;
 		  	n = get_bit(alu_out, 31);
-		  	c = !borrowFrom(alu_out);
+		  	c = !borrowFrom(alu_out, shifter_operand, rn);
 		  	v = overflowFrom(rn, shifter_operand, alu_out);
 		break;
 		case CMN:
@@ -271,7 +271,7 @@ void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shif
       			comp = 0;
 		  	z = alu_out == 0;
 		  	n = get_bit(alu_out, 31);
-		  	c = carryFrom(alu_out);
+		  	c = carryFrom(alu_out, shifter_operand, rn);
 		  	v = overflowFrom(rn, shifter_operand, alu_out);					
 		break;
 	}
@@ -306,12 +306,12 @@ void update_flags(arm_core p, uint8_t z, uint8_t n, uint8_t c, uint8_t v) {
 	arm_write_cpsr(p, cpsr);
 }
 
-int carryFrom(uint64_t x) {
-	return get_bit(x, 32);
+int carryFrom(uint64_t x, int32_t opr1, int32_t opr2) {
+	return get_bit(x, 32) && opr1 >= 0 && opr2 >= 0;
 }
 
-int borrowFrom(uint64_t x) {
-	return !carryFrom(x);
+int borrowFrom(uint64_t x, int32_t opr1, int32_t opr2) {
+	return !carryFrom(x, opr1, opr2);
 }
 
 int overflowFrom(int32_t a, int32_t b, int64_t r) {
