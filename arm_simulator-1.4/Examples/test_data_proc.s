@@ -4,7 +4,7 @@
 etq: b suite
 
 main:
-	@ at the end thus registers must have the same values as before
+	@ test passed if at the end thus registers will have the same values as its index
 	mov r0, #1
 	mov r1, #1
 	mov r2, #2 
@@ -41,6 +41,7 @@ suite:
 	teq r1, r1
 	beq fin
 	tst r1, r1
+	mov r0, #9
 	bne fin
 	
 fin: swi 0x123456
