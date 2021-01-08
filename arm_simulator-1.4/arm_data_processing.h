@@ -33,11 +33,11 @@ int arm_data_processing_shift(arm_core p, uint32_t ins);
 int arm_data_processing_immediate_msr(arm_core p, uint32_t ins);
 
 // processing
-void processing(arm_core p, uint32_t ins, int32_t shifter_operand, uint8_t shifter_carry_out);
+void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shifter_carry_out);
 
 void update_flags(arm_core p, uint8_t z, uint8_t n, uint8_t c, uint8_t v);
-int carryFrom(uint64_t x, int32_t opr1, int32_t opr2);
-int borrowFrom(uint64_t x, int32_t opr1, int32_t opr2);
+int carryFrom(uint64_t x, uint32_t opr1, uint32_t opr2);
+int borrowFrom(uint64_t x, uint32_t opr1, uint32_t opr2);
 int overflowFrom(int32_t a, int32_t b, int64_t r) ;
 
 // shifter_operand's 11 formats -- see A5-1 in doc

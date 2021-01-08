@@ -28,6 +28,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "debug.h"
 #include <assert.h>
 
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing_shift(arm_core p, uint32_t ins) {
 	//uint32_t cpsr = arm_read_cpsr(p);
@@ -126,7 +127,7 @@ int arm_data_processing_immediate_msr(arm_core p, uint32_t ins) {
 
 // processing
 // borrowFrom is the negation of carryFrom
-void processing(arm_core p, uint32_t ins, int32_t shifter_operand, uint8_t shifter_carry_out) {
+void processing(arm_core p, uint32_t ins, uint32_t shifter_operand, uint8_t shifter_carry_out) {
 	// shifter_operand now is calculated
 	uint32_t cond = get_bits(ins, 31, 28);
 				
@@ -142,70 +143,69 @@ void processing(arm_core p, uint32_t ins, int32_t shifter_operand, uint8_t shift
 
  	int comp;
   	uint8_t z,n,c,v;
-  	uint32_t alu_out;
+  	uint64_t alu_out;
 	uint64_t rd_value;
 
 	switch(opr) {
 		case AND:		
-      			rd_value = rn & shifter_operand;
-     			comp = 1;
-      			z = rd_value == 0;
-			n = get_bit(rd_value, 31);
-			c = shifter_carry_out;
-      			v = 0;
+    		rd_value = rn & shifter_operand;
+      		comp = 1;
+        		z = rd_value == 0;
+        		n = get_bit(rd_value, 31);
+        		c = shifter_carry_out;
+        		v = 0;
 		break;
 		case EOR:
 		  	rd_value = rn ^ shifter_operand;
      			comp = 1;
-      			z = rd_value == 0;
+      			z = ((uint32_t)rd_value) == 0;
       			n = get_bit(rd_value, 31);
       			c = shifter_carry_out;
       			v = 0;
 		break;
 		case SUB:
-		  	rd_value = rn - shifter_operand;
-      			comp = 1;
-		  	z = rd_value == 0;
+		  	rd_value = (uint64_t)rn - (uint64_t) shifter_operand;
+  			comp = 1;
+		  	z = ((uint32_t)rd_value) == 0;
 		  	n = get_bit(rd_value, 31);
-      			c = !borrowFrom( rd_value, shifter_operand, rd_value);
+  			c = !borrowFrom( rd_value, shifter_operand, rd_value);
 		  	v = overflowFrom(rn, shifter_operand, rd_value);	
 		break;
 		case RSB:
-		  	rd_value = shifter_operand - rn;
-      			comp = 1;
-			z =rd_value == 0;
-			n = get_bit(rd_value, 31);
-      			c = !borrowFrom( rd_value, shifter_operand, rd_value);
-			v = overflowFrom(rn, shifter_operand, rd_value);
+		  	rd_value = (uint64_t) shifter_operand - (uint64_t) rn;
+  			comp = 1;
+		  	z =((uint32_t)rd_value) == 0;
+			  n = get_bit(rd_value, 31);
+  			c = !borrowFrom( rd_value, shifter_operand, rd_value);
+		  	v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case ADD:
-		  	rd_value = rn + shifter_operand;
+		  	rd_value = (uint64_t) rn  + (uint64_t) shifter_operand;
 			comp = 1;
-			z = rd_value == 0;
+			z = ((uint32_t)rd_value) == 0;
 			n = get_bit(rd_value, 31);
 			c = carryFrom(rd_value ,shifter_operand, rn);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case ADC:
-			rd_value = rn + shifter_operand + get_bit(cpsr, C);
+			rd_value = (uint64_t) rn + (uint64_t) shifter_operand + (uint64_t) get_bit(cpsr, C);
 			comp = 1;
-			z = rd_value == 0;
+			z = ((uint32_t)rd_value) == 0;
 			n = get_bit(rd_value, 31);
 			c = carryFrom(rd_value ,shifter_operand, rn);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case SBC:
-		  	rd_value = rn - shifter_operand - (1 - get_bit(cpsr, C));
-			comp = 1;
-			z = rd_value == 0;
+		  	rd_value = (uint64_t) rn - (uint64_t) shifter_operand - (uint64_t) (1 - get_bit(cpsr, C));
+			z = ((uint32_t)rd_value) == 0;
 			n = get_bit(rd_value, 31);
 			c = !borrowFrom( rd_value, shifter_operand, rd_value);
 			v = overflowFrom(rn, shifter_operand, rd_value);
 		break;
 		case RSC:
-		  	rd_value = shifter_operand - rn - (1 - get_bit(cpsr, C));
-			comp = 1;
-			z = rd_value == 0;
+		  	rd_value = (uint64_t) shifter_operand - (uint64_t) rn - (uint64_t) (1 - get_bit(cpsr, C));
+				arm_write_register(p, rd, rd_value );
+			z = ((uint32_t)rd_value) == 0;
 			n = get_bit(rd_value, 31);
 			c = !borrowFrom( rd_value, shifter_operand, rd_value);
 			v = overflowFrom(rn, shifter_operand, rd_value);
@@ -243,33 +243,33 @@ void processing(arm_core p, uint32_t ins, int32_t shifter_operand, uint8_t shift
       			v = 0;
 		break;
     		case TST:
-      			alu_out = rn & shifter_operand;
+   			alu_out = rn & shifter_operand;
   			comp = 0;
-		  	z = alu_out == 0;
-      			n = get_bit(alu_out, 31);
-			c = shifter_carry_out;
-    			v = 0;
+		  	z = (uint32_t)alu_out == 0;
+  			n = get_bit((uint32_t)alu_out, 31);
+		  	c = shifter_carry_out;
+      	v = 0;
 		break;
 		case TEQ:
   			alu_out = rn ^ shifter_operand;
   			comp = 0;
-  			z = alu_out == 0;
-  			n = get_bit(alu_out, 31);
+  			z = (uint32_t)alu_out == 0;
+  			n = get_bit((uint32_t)alu_out, 31);
 		  	c = shifter_carry_out;
         v = 0;
 		break;
 		case CMP:
-  			alu_out = rn - shifter_operand;
-		      	comp = 0;
-  			z = alu_out == 0;
+  			alu_out = (uint64_t)rn - (uint64_t) shifter_operand;
+    	  comp = 0;
+  			z = ((uint32_t)alu_out) == 0;
 		  	n = get_bit(alu_out, 31);
 		  	c = !borrowFrom(alu_out, shifter_operand, rn);
 		  	v = overflowFrom(rn, shifter_operand, alu_out);
 		break;
 		case CMN:
-  			alu_out = rn + shifter_operand;
+  			alu_out = (uint64_t) rn + (uint64_t)shifter_operand;
       			comp = 0;
-		  	z = alu_out == 0;
+		  	z = ((uint32_t)alu_out) == 0;
 		  	n = get_bit(alu_out, 31);
 		  	c = carryFrom(alu_out, shifter_operand, rn);
 		  	v = overflowFrom(rn, shifter_operand, alu_out);					
@@ -306,16 +306,16 @@ void update_flags(arm_core p, uint8_t z, uint8_t n, uint8_t c, uint8_t v) {
 	arm_write_cpsr(p, cpsr);
 }
 
-int carryFrom(uint64_t x, int32_t opr1, int32_t opr2) {
-	return get_bit(x, 32) && opr1 >= 0 && opr2 >= 0;
+int carryFrom(uint64_t x, uint32_t opr1, uint32_t opr2) {
+	return x >> 32;
 }
 
-int borrowFrom(uint64_t x, int32_t opr1, int32_t opr2) {
+int borrowFrom(uint64_t x, uint32_t opr1, uint32_t opr2) {
 	return !carryFrom(x, opr1, opr2);
 }
 
 int overflowFrom(int32_t a, int32_t b, int64_t r) {
-     return (a > 0 && b > 0 && r < 0) || (a < 0 && b < 0 && r > 0);
+  return (get_bit(a, 31) == get_bit(b, 31)) && (get_bit(b, 31) != get_bit(r, 31));  //prouver par table de vériter : vrai si a[31] = b[31] XOR r[31], faux sinon
 }
 
 // shifter_operand's 11 formats -- see A5-1 in doc
