@@ -27,7 +27,6 @@ Contact: Guillaume.Huard@imag.fr
 
 void arm_exception(arm_core p, unsigned char exception);
 void save_state_and_change_mode(arm_core p, unsigned char exception, uint16_t mode);
-void gest_abort(arm_core p,uint32_t adr_vect);
 void branch_handler(arm_core p);
-
+uint32_t select_exception_vector_address(unsigned char exception);
 #endif
